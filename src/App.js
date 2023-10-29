@@ -167,3 +167,55 @@ function ChatMessage(props) {
 
 
 export default App;
+
+
+/* NOTES FOR FIRESTORE:
+To ensure messages populate, update the Rules in Cloud Firestore with JavaScript instructions
+
+-match the path to the collection in the database for messages
+-make sure user is logged in to read the db 
+-make sure user isn't banned for any reason before allowing them to create a new message
+-write a function to define writability permissions for banned and permitted users
+-ensure the user is signed in
+-ensure the user id matches the user ID on the document they're trying to create
+-create and reference a "banned" collection for users that violate rules
+
+Your rules should look like this: 
+  rules_version = '2';
+
+  service cloud.firestore {
+    match /databases/{database}/documents {
+      match /{document=**} {
+        allow read, write: if false;
+      }
+      
+      match /messages/{docId}{
+      allow read: if request.auth.uid != null;
+      allow create: if canCreateMessage();
+      }
+      
+      function canCreateMessage() {
+        let isSignedIn = request.auth.uid != null;
+        let isOwner = request.auth.uid == request.resource.data.uid;
+        
+        let isNotBanned = exists(
+        /databases/$(database)/documents/banned/$(request.auth.uid)
+        ) == false;
+      
+      return isSignedIn && isOwner && isNotBanned;
+      }
+      
+    }
+  }
+
+
+*********************************
+Run <firebase init functions> in the terminal to create a serverless backend server. 
+- This creates a node project in the functions directory where you can install a 'bad words' package
+
+CD into the functions folder
+ - Run <npm i bad-words> to install bad words package
+ - Write cloud function that runs every time a new document is created in the messages collection, bans inappropriate users and cleans the text of bad words.
+ - run <firebase deploy --only functions>
+
+*/
