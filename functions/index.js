@@ -7,7 +7,7 @@
  * See a full list of supported triggers at https://firebase.google.com/docs/functions
  */
 
-const {onRequest} = require("firebase-functions/v2/https");
+const { onRequest } = require("firebase-functions/v2/https");
 const logger = require("firebase-functions/logger");
 
 // Create and deploy your first functions
@@ -21,7 +21,7 @@ const logger = require("firebase-functions/logger");
 
 // Export a cloud function that runs every time a new document is created in the messages collection. 
 const functions = require('firebase-functions');
-const Filter = require('bad-words')
+const Filter = require("bad-words")
 
 const admin = require('firebase-admin');
 admin.initializeApp();
@@ -32,12 +32,12 @@ exports.detectEvilUsers = functions.firestore
     .onCreate(async (doc, ctx) => {
 
         const filter = new Filter();
-        const {text, uid} = doc.data();
+        const { text, uid } = doc.data();
 
         if (filter.isProfane(text)) {
             const cleaned = filter.clean(text);
-            await doc.ref.update({text: `I got BANNED for life for saying...${cleaned}`});
+            await doc.ref.update({ text: `I got BANNED for life for saying...${cleaned}` });
             await db.collection('banned').doc(uid).set({});
-        
+
         }
     });
